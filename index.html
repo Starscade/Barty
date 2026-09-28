@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en" oncontextmenu="return false">
+	<head>
+		<link rel="icon" href="icon-192-any.png">
+		<link rel="manifest" href="manifest.json">
+		<meta charset="UTF-8">
+		<meta name="theme-color" content="Black">
+		<meta name="viewport"
+			content="initial-scale=1.0,user-scalable=no,viewport-fit=cover,width=device-width">
+		<style>
+		:root {
+			--bart-bg: #e0e0e0;
+			--bart-black: #212121;
+			--bart-blue: #00a1de;
+			--bart-blue-dark: #0077a8;
+			--bart-gray-dark: #53565a;
+			--bart-gray-light: #f4f4f4;
+			--bart-gray-medium: #d1d3d4;
+			--bart-white: #ffffff;
+			font-weight: bold;
+			height: 100%;
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body,
+		.container {
+			height: 100%;
+			margin: 0;
+		}
+
+		body {
+			background: var(--bart-bg);
+			color: var(--bart-black);
+			display: flex;
+			flex-direction: column;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+				Arial, sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+
+		.btn-location {
+			align-items: center;
+			background: var(--bart-blue);
+			border: none;
+			color: white;
+			cursor: pointer;
+			display: flex;
+			font-weight: bold;
+			height: 46px;
+			justify-content: center;
+			position: relative;
+			transition: background 0.2s;
+			width: 100%;
+		}
+
+		.btn-location:active {
+			background: var(--bart-blue-dark);
+		}
+
+		.btn-location:disabled {
+			background: var(--bart-blue-dark);
+			cursor: not-allowed;
+		}
+
+		.card-row {
+			align-items: center;
+			background: var(--bart-white);
+			border-left: 12px solid var(--bart-gray-medium);
+			border-radius: 8px;
+			box-shadow: 0 2px 2px #00000011;
+			display: flex;
+			margin-bottom: 10px;
+			min-height: 56px;
+			overflow: hidden;
+		}
+
+		.container {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			margin: 0 auto;
+			overflow: hidden;
+			width: 100%;
+			position: relative;
+		}
+
+		.controls {
+			background: black;
+			border-top: 4px solid var(--bart-blue);
+			display: flex;
+			flex-direction: column;
+			flex-shrink: 0;
+			gap: 10px;
+			padding: 15px;
+			z-index: 10;
+		}
+
+		.est-pill {
+			font-size: 0.85rem;
+			min-width: 40px;
+			padding: 4px 8px;
+			text-align: center;
+		}
+
+		.est-pill.leaving {
+			animation: blink 1.5s infinite;
+			color: var(--bart-blue);
+		}
+
+		.line-dest {
+			border-right: 1px solid var(--bart-gray-light);
+			flex: 1;
+			font-size: 1rem;
+			overflow: hidden;
+			padding: 12px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.line-estimates {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+			padding: 12px;
+		}
+
+		#departures-container {
+			flex: 1;
+			min-height: 0;
+			overflow-y: auto;
+			padding: 15px;
+			position: relative;
+		}
+
+		.skeleton-card {
+			background: var(--bart-gray-medium);
+			overflow: hidden;
+			position: relative;
+		}
+
+		.skeleton-card::after {
+			animation: shimmer 2s infinite;
+			background-image: linear-gradient(
+				90deg,
+				rgba(255, 255, 255, 0) 0,
+				rgba(255, 255, 255, 0.6) 50%,
+				rgba(255, 255, 255, 0) 100%
+			);
+			bottom: 0;
+			content: "";
+			left: 0;
+			position: absolute;
+			right: 0;
+			top: 0;
+			transform: translateX(-100%);
+		}
+
+		.slider {
+			background-color: var(--bart-gray-medium);
+			bottom: 0;
+			cursor: pointer;
+			left: 0;
+			position: absolute;
+			right: 0;
+			top: 0;
+			transition: .4s;
+			border-radius: 34px;
+		}
+
+		.slider:before {
+			background-color: var(--bart-white);
+			bottom: 4px;
+			content: "";
+			height: 26px;
+			left: 4px;
+			position: absolute;
+			transition: .4s;
+			width: 26px;
+			border-radius: 50%;
+		}
+
+		.switch {
+			display: inline-block;
+			height: 34px;
+			position: relative;
+			width: 60px;
+		}
+
+		.switch input {
+			height: 0;
+			opacity: 0;
+			width: 0;
+		}
+
+		#snackbar {
+			background-color: var(--bart-black);
+			color: #fff;
+			font-size: 0.9rem;
+			left: 50%;
+			min-width: 250px;
+			opacity: 0;
+			padding: 16px;
+			position: fixed;
+			text-align: center;
+			top: 20px;
+			transform: translateX(-50%);
+			transition: opacity 0.3s, visibility 0.3s;
+			visibility: hidden;
+			z-index: 100;
+			border-radius: 8px;
+		}
+
+		#snackbar.show {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		select,
+		.toggle-container,
+		.btn-location {
+			border-radius: 8px;
+			font-size: 1rem;
+			padding: 12px;
+		}
+
+		select,
+		.toggle-container {
+			background: var(--bart-white);
+		}
+
+		select {
+			appearance: none;
+			border: none;
+			color: var(--bart-black);
+			cursor: pointer;
+			font-weight: inherit;
+			width: 100%;
+		}
+
+		select:focus {
+			outline: none;
+		}
+
+		.spinner {
+			animation: spin 1s ease-in-out infinite;
+			border: 3px solid rgba(255,255,255,0.3);
+			border-radius: 50%;
+			border-top-color: #fff;
+			display: none;
+			height: 20px;
+			position: absolute;
+			width: 20px;
+		}
+
+		.toggle-container {
+			align-items: center;
+			display: flex;
+			justify-content: space-between;
+		}
+
+		#map-overlay {
+			background: #000;
+			display: none;
+			left: 0;
+			overflow: hidden;
+			position: absolute;
+			top: 0;
+			touch-action: none;
+			width: 100%;
+			z-index: 50;
+		}
+
+		#map-overlay,
+		#map-viewport {
+			height: 100%;
+			left: 0;
+			position: absolute;
+			top: 0;
+			width: 100%;
+		}
+
+		#map-viewport {
+			align-items: center;
+			cursor: grab;
+			display: flex;
+			justify-content: center;
+		}
+
+		#map-viewport:active {
+			cursor: grabbing;
+		}
+
+		#system-map {
+			-webkit-user-drag: none;
+			max-width: none;
+			transform-origin: center;
+			user-select: none;
+		}
+
+		#btn-map-toggle {
+			background-image: url('system-map.jpg');
+			background-position: center;
+			background-size: 700%;
+			border: 4px solid var(--bart-blue);
+			color: white;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			font-size: 14px;
+			height: 56px;
+			justify-content: center;
+			position: absolute;
+			right: 1rem;
+			bottom: calc(100% + 1rem);
+			border-radius: 28px;
+			box-shadow: 0 2px 4px #00000033;
+			text-transform: uppercase;
+			transition: transform 0.2s;
+			width: 56px;
+			z-index: 60;
+		}
+
+		#btn-map-toggle:active {
+			transform: scale(0.9);
+		}
+
+		@keyframes blink {
+			0%,
+			100% {
+				opacity: 1;
+			}
+			50% {
+				opacity: 0.5;
+			}
+		}
+
+		@keyframes shimmer {
+			100% {
+				transform: translateX(100%);
+			}
+		}
+
+		@keyframes spin {
+			to {
+				transform: rotate(360deg);
+			}
+		}
+
+		input:checked + .slider {
+			background-color: var(--bart-blue);
+		}
+
+		input:checked + .slider:before {
+			transform: translateX(26px);
+		}
+
+		.platform-header {
+			font-size: 0.8rem;
+			color: var(--bart-gray-dark);
+			margin: 20px 0 10px 0;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+			border-bottom: 1px solid var(--bart-gray-medium);
+			padding-bottom: 4px;
+		}
+		</style>
+		<title>&zwj;</title>
+	</head>
+	<body>
+		<div id="snackbar"></div>
+		<div class="container">
+			<div id="departures-container">
+				<div id="departures"></div>
+				<div id="map-overlay">
+					<div id="map-viewport">
+						<img id="system-map" src="system-map.jpg" alt="BART System Map">
+					</div>
+				</div>
+			</div>
+
+			<div style="position: relative; width: 100%;">
+				<button id="btn-map-toggle" title="View System Map"></button>
+				<div class="controls">
+					<select id="station-select"></select>
+					<div class="toggle-container">
+						<span id="direction-label">Northbound</span>
+						<label class="switch">
+							<input type="checkbox" id="direction-toggle" checked>
+							<span class="slider"></span>
+						</label>
+					</div>
+					<button id="btn-location" class="btn-location">
+						<span id="btn-text">Find Nearest Station</span>
+						<div id="btn-spinner" class="spinner"></div>
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<script>
+		const API_KEY = 'MW9S-E7SL-26DU-VV8V'
+		const stationsData = {
+			root: {
+				stations: {
+					station: [{
+						abbr: '12TH',
+						gtfs_latitude: 37.803768,
+						gtfs_longitude: -122.271450,
+						name: '12th St. Oakland City Center',
+					}, {
+						abbr: '16TH',
+						gtfs_latitude: 37.765062,
+						gtfs_longitude: -122.419694,
+						name: '16th St. Mission',
+					}, {
+						abbr: '19TH',
+						gtfs_latitude: 37.808350,
+						gtfs_longitude: -122.268602,
+						name: '19th St. Oakland',
+					}, {
+						abbr: '24TH',
+						gtfs_latitude: 37.752470,
+						gtfs_longitude: -122.418143,
+						name: '24th St. Mission',
+					}, {
+						abbr: 'ANTC',
+						gtfs_latitude: 37.995388,
+						gtfs_longitude: -121.780420,
+						name: 'Antioch',
+					}, {
+						abbr: 'ASHB',
+						gtfs_latitude: 37.852803,
+						gtfs_longitude: -122.270062,
+						name: 'Ashby',
+					}, {
+						abbr: 'BALB',
+						gtfs_latitude: 37.721585,
+						gtfs_longitude: -122.447506,
+						name: 'Balboa Park',
+					}, {
+						abbr: 'BAYF',
+						gtfs_latitude: 37.696924,
+						gtfs_longitude: -122.126514,
+						name: 'Bay Fair',
+					}, {
+						abbr: 'BERY',
+						gtfs_latitude: 37.368473,
+						gtfs_longitude: -121.874681,
+						name: 'Berryessa/North San Jose',
+					}, {
+						abbr: 'CAST',
+						gtfs_latitude: 37.690746,
+						gtfs_longitude: -122.075602,
+						name: 'Castro Valley',
+					}, {
+						abbr: 'CIVC',
+						gtfs_latitude: 37.779732,
+						gtfs_longitude: -122.414123,
+						name: 'Civic Center/UN Plaza',
+					}, {
+						abbr: 'COLS',
+						gtfs_latitude: 37.753661,
+						gtfs_longitude: -122.196869,
+						name: 'Coliseum',
+					}, {
+						abbr: 'COLM',
+						gtfs_latitude: 37.684638,
+						gtfs_longitude: -122.466233,
+						name: 'Colma',
+					}, {
+						abbr: 'CONC',
+						gtfs_latitude: 37.973737,
+						gtfs_longitude: -122.029095,
+						name: 'Concord',
+					}, {
+						abbr: 'DALY',
+						gtfs_latitude: 37.706121,
+						gtfs_longitude: -122.469081,
+						name: 'Daly City',
+					}, {
+						abbr: 'DBRK',
+						gtfs_latitude: 37.870104,
+						gtfs_longitude: -122.268133,
+						name: 'Downtown Berkeley',
+					}, {
+						abbr: 'DUBL',
+						gtfs_latitude: 37.701687,
+						gtfs_longitude: -121.899179,
+						name: 'Dublin/Pleasanton',
+					}, {
+						abbr: 'DELN',
+						gtfs_latitude: 37.925086,
+						gtfs_longitude: -122.316794,
+						name: 'El Cerrito del Norte',
+					}, {
+						abbr: 'PLZA',
+						gtfs_latitude: 37.902632,
+						gtfs_longitude: -122.298904,
+						name: 'El Cerrito Plaza',
+					}, {
+						abbr: 'EMBR',
+						gtfs_latitude: 37.792874,
+						gtfs_longitude: -122.397020,
+						name: 'Embarcadero',
+					}, {
+						abbr: 'FRMT',
+						gtfs_latitude: 37.557465,
+						gtfs_longitude: -121.976608,
+						name: 'Fremont',
+					}, {
+						abbr: 'FTVL',
+						gtfs_latitude: 37.774836,
+						gtfs_longitude: -122.224175,
+						name: 'Fruitvale',
+					}, {
+						abbr: 'GLEN',
+						gtfs_latitude: 37.733064,
+						gtfs_longitude: -122.433817,
+						name: 'Glen Park',
+					}, {
+						abbr: 'HAYW',
+						gtfs_latitude: 37.669723,
+						gtfs_longitude: -122.087018,
+						name: 'Hayward',
+					}, {
+						abbr: 'LAFY',
+						gtfs_latitude: 37.893176,
+						gtfs_longitude: -122.124630,
+						name: 'Lafayette',
+					}, {
+						abbr: 'LAKE',
+						gtfs_latitude: 37.797027,
+						gtfs_longitude: -122.265180,
+						name: 'Lake Merritt',
+					}, {
+						abbr: 'MCAR',
+						gtfs_latitude: 37.829065,
+						gtfs_longitude: -122.267040,
+						name: 'MacArthur',
+					}, {
+						abbr: 'MLBR',
+						gtfs_latitude: 37.600271,
+						gtfs_longitude: -122.386702,
+						name: 'Millbrae',
+					}, {
+						abbr: 'MLPT',
+						gtfs_latitude: 37.410277,
+						gtfs_longitude: -121.891081,
+						name: 'Milpitas',
+					}, {
+						abbr: 'MONT',
+						gtfs_latitude: 37.789405,
+						gtfs_longitude: -122.401066,
+						name: 'Montgomery St.',
+					}, {
+						abbr: 'NBRK',
+						gtfs_latitude: 37.873967,
+						gtfs_longitude: -122.283440,
+						name: 'North Berkeley',
+					}, {
+						abbr: 'NCON',
+						gtfs_latitude: 38.003193,
+						gtfs_longitude: -122.024653,
+						name: 'North Concord/Martinez',
+					}, {
+						abbr: 'OAKL',
+						gtfs_latitude: 37.713238,
+						gtfs_longitude: -122.212191,
+						name: 'Oakland International Airport',
+					}, {
+						abbr: 'ORIN',
+						gtfs_latitude: 37.878361,
+						gtfs_longitude: -122.183791,
+						name: 'Orinda',
+					}, {
+						abbr: 'PITT',
+						gtfs_latitude: 38.018914,
+						gtfs_longitude: -121.945154,
+						name: 'Pittsburg/Bay Point',
+					}, {
+						abbr: 'PCTR',
+						gtfs_latitude: 38.016941,
+						gtfs_longitude: -121.889457,
+						name: 'Pittsburg Center',
+					}, {
+						abbr: 'PHIL',
+						gtfs_latitude: 37.928468,
+						gtfs_longitude: -122.056012,
+						name: 'Pleasant Hill/Contra Costa Centre',
+					}, {
+						abbr: 'POWL',
+						gtfs_latitude: 37.784471,
+						gtfs_longitude: -122.407974,
+						name: 'Powell St.',
+					}, {
+						abbr: 'RICH',
+						gtfs_latitude: 37.936853,
+						gtfs_longitude: -122.353099,
+						name: 'Richmond',
+					}, {
+						abbr: 'ROCK',
+						gtfs_latitude: 37.844702,
+						gtfs_longitude: -122.251371,
+						name: 'Rockridge',
+					}, {
+						abbr: 'SBRN',
+						gtfs_latitude: 37.637761,
+						gtfs_longitude: -122.416287,
+						name: 'San Bruno',
+					}, {
+						abbr: 'SFIA',
+						gtfs_latitude: 37.615966,
+						gtfs_longitude: -122.392409,
+						name: 'San Francisco International Airport',
+					}, {
+						abbr: 'SANL',
+						gtfs_latitude: 37.721947,
+						gtfs_longitude: -122.160844,
+						name: 'San Leandro',
+					}, {
+						abbr: 'SHAY',
+						gtfs_latitude: 37.634375,
+						gtfs_longitude: -122.057189,
+						name: 'South Hayward',
+					}, {
+						abbr: 'SSAN',
+						gtfs_latitude: 37.664245,
+						gtfs_longitude: -122.443960,
+						name: 'South San Francisco',
+					}, {
+						abbr: 'UCTY',
+						gtfs_latitude: 37.590630,
+						gtfs_longitude: -122.017388,
+						name: 'Union City',
+					}, {
+						abbr: 'WCRK',
+						gtfs_latitude: 37.905522,
+						gtfs_longitude: -122.067527,
+						name: 'Walnut Creek',
+					}, {
+						abbr: 'WARM',
+						gtfs_latitude: 37.502171,
+						gtfs_longitude: -121.939313,
+						name: 'Warm Springs/South Fremont',
+					}, {
+						abbr: 'WDUB',
+						gtfs_latitude: 37.699756,
+						gtfs_longitude: -121.928240,
+						name: 'West Dublin/Pleasanton',
+					}, {
+						abbr: 'WOAK',
+						gtfs_latitude: 37.804872,
+						gtfs_longitude: -122.295140,
+						name: 'West Oakland',
+					}],
+				},
+			},
+		}
+
+		let currentGeolocationWatchId = null
+		let activeGeoRequestId = null
+
+		function showSnackbar(message) {
+			const snackbar = document.getElementById('snackbar')
+			snackbar.textContent = message
+			snackbar.className = 'show'
+			setTimeout(() => {
+				snackbar.className = snackbar.className.replace('show', '')
+			}, 3000)
+		}
+
+		function calculateDistance(lat1, lon1, lat2, lon2) {
+			const R = 6371
+			const dLat = (lat2 - lat1) * Math.PI / 180
+			const dLon = (lon2 - lon1) * Math.PI / 180
+			const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+				Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+					Math.sin(dLon / 2) * Math.sin(dLon / 2)
+			const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+			return R * c
+		}
+
+		function findNearestStation(userLat, userLon) {
+			const stations = stationsData.root.stations.station
+			let nearest = null
+			let minDist = Infinity
+			stations.forEach((st) => {
+				const dist = calculateDistance(
+					userLat,
+					userLon,
+					st.gtfs_latitude,
+					st.gtfs_longitude,
+				)
+				if (dist < minDist) {
+					minDist = dist
+					nearest = st
+				}
+			})
+			return nearest
+		}
+
+		function showSkeletons() {
+			const departuresDiv = document.getElementById('departures')
+			departuresDiv.innerHTML = ''
+			for (let i = 0; i < 5; i++) {
+				const group = document.createElement('div')
+				group.className = 'card-row skeleton-card'
+				departuresDiv.appendChild(group)
+			}
+		}
+
+		async function fetchAndRenderDepartures(station) {
+			if (!station) return
+
+			const stationObj = typeof station === 'string'
+				? stationsData.root.stations.station.find((s) => s.abbr === station)
+				: station
+
+			if (!stationObj) return
+
+			const departuresDiv = document.getElementById('departures')
+			const isNorthbound = document.getElementById('direction-toggle').checked
+
+			showSkeletons()
+
+			try {
+				// Using the 'dir' parameter from the docs to filter at the API level
+				const dirParam = isNorthbound ? 'n' : 's'
+				const apiUrl =
+					`https://api.bart.gov/api/etd.aspx?cmd=etd&orig=${stationObj.abbr}&key=${API_KEY}&dir=${dirParam}&json=y`
+				const response = await fetch(apiUrl)
+				if (!response.ok) throw new Error('API request failed')
+				const data = await response.json()
+
+				let etdList = data.root.station[0].etd
+
+				departuresDiv.innerHTML = ''
+				if (!etdList || etdList.length === 0) {
+					departuresDiv.innerHTML =
+						'<div style="text-align:center; color:var(--bart-gray-dark); padding:20px;">No departures found for this direction.</div>'
+					return
+				}
+
+				// Group by platform
+				const platforms = {}
+				etdList.forEach(dest => {
+					// Get platform from first estimate as platforms are consistent per destination
+					const plat = dest.estimate[0]?.platform || 'Unknown'
+					if (!platforms[plat]) platforms[plat] = []
+					platforms[plat].push(dest)
+				})
+
+				// Sort platforms numerically
+				const sortedPlatformKeys = Object.keys(platforms).sort((a, b) => {
+					const numA = parseInt(a)
+					const numB = parseInt(b)
+					return (isNaN(numA) || isNaN(numB)) ? a.localeCompare(b) : numA - numB
+				})
+
+				sortedPlatformKeys.forEach(platKey => {
+					const header = document.createElement('div')
+					header.className = 'platform-header'
+					header.textContent = `Platform ${platKey}`
+					departuresDiv.appendChild(header)
+
+					platforms[platKey].forEach((dest) => {
+						const row = document.createElement('div')
+						row.className = 'card-row'
+						row.style.borderLeftColor = dest.estimate[0].hexcolor
+
+						const destSpan = document.createElement('div')
+						destSpan.className = 'line-dest'
+						destSpan.textContent = dest.destination
+
+						const estContainer = document.createElement('div')
+						estContainer.className = 'line-estimates'
+
+						dest.estimate.forEach((est) => {
+							const pill = document.createElement('span')
+							pill.className = `est-pill ${
+								est.minutes === 'Leaving' ? 'leaving' : ''
+							}`
+							pill.textContent = est.minutes === 'Leaving' ? '0' : `${est.minutes}m`
+							estContainer.appendChild(pill)
+						})
+
+						row.appendChild(destSpan)
+						row.appendChild(estContainer)
+						departuresDiv.appendChild(row)
+					})
+				})
+			} catch (err) {
+				departuresDiv.innerHTML = ''
+				console.error(err)
+			}
+		}
+
+		function resetLocationButton() {
+			const btn = document.getElementById('btn-location')
+			const btnText = document.getElementById('btn-text')
+			const btnSpinner = document.getElementById('btn-spinner')
+			btn.disabled = false
+			btnText.style.display = 'block'
+			btnSpinner.style.display = 'none'
+		}
+
+		function cancelGeolocation() {
+			if (currentGeolocationWatchId !== null) {
+				navigator.geolocation.clearWatch(currentGeolocationWatchId)
+				currentGeolocationWatchId = null
+			}
+			activeGeoRequestId = null
+			resetLocationButton()
+		}
+
+		function handleGeolocation() {
+			if (!navigator.geolocation) {
+				showSnackbar('Geolocation not supported by your browser.')
+				return
+			}
+
+			const btn = document.getElementById('btn-location')
+			const btnText = document.getElementById('btn-text')
+			const btnSpinner = document.getElementById('btn-spinner')
+
+			btn.disabled = true
+			btnText.style.display = 'none'
+			btnSpinner.style.display = 'block'
+
+			const requestId = Date.now()
+			activeGeoRequestId = requestId
+
+			navigator.geolocation.getCurrentPosition(
+				(pos) => {
+					if (activeGeoRequestId !== requestId) return
+
+					const station = findNearestStation(
+						pos.coords.latitude,
+						pos.coords.longitude,
+					)
+					const stationSelect = document.getElementById('station-select')
+					stationSelect.value = station.abbr
+					localStorage.setItem('lastStation', station.abbr)
+					fetchAndRenderDepartures(station)
+					resetLocationButton()
+				},
+				(err) => {
+					if (activeGeoRequestId !== requestId) return
+
+					resetLocationButton()
+					showSnackbar('Unable to retrieve location. Please select a station.')
+				},
+				{ timeout: 10000 },
+			)
+		}
+
+		function initMap() {
+			const overlay = document.getElementById('map-overlay')
+			const toggleBtn = document.getElementById('btn-map-toggle')
+			const viewport = document.getElementById('map-viewport')
+			const img = document.getElementById('system-map')
+
+			let scale = 1, posX = 0, posY = 0
+			let isDragging = false, startX, startY
+
+			function updateTransform() {
+				img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`
+			}
+
+			toggleBtn.onclick = () => {
+				const isVisible = overlay.style.display === 'block'
+				if (isVisible) {
+					overlay.style.display = 'none'
+				} else {
+					scale = 1
+					posX = 0
+					posY = 0
+					updateTransform()
+					overlay.style.display = 'block'
+				}
+			}
+
+			viewport.onmousedown = (e) => {
+				isDragging = true
+				startX = e.clientX - posX
+				startY = e.clientY - posY
+			}
+			window.onmousemove = (e) => {
+				if (!isDragging) return
+				posX = e.clientX - startX
+				posY = e.clientY - startY
+
+				const viewW = viewport.clientWidth
+				const viewH = viewport.clientHeight
+				const imgW = img.naturalWidth * scale
+				const imgH = img.naturalHeight * scale
+
+				if (imgW > viewW) {
+					const limit = (imgW - viewW) / 2
+					posX = Math.max(-limit, Math.min(limit, posX))
+				} else posX = 0
+				if (imgH > viewH) {
+					const limit = (imgH - viewH) / 2
+					posY = Math.max(-limit, Math.min(limit, posY))
+				} else posY = 0
+
+				updateTransform()
+			}
+			window.onmouseup = () => isDragging = false
+
+			viewport.ontouchstart = (e) => {
+				isDragging = true
+				startX = e.touches[0].clientX - posX
+				startY = e.touches[0].clientY - posY
+			}
+			viewport.ontouchmove = (e) => {
+				if (e.touches.length === 2) return
+				if (!isDragging) return
+				posX = e.touches[0].clientX - startX
+				posY = e.touches[0].clientY - startY
+
+				const viewW = viewport.clientWidth
+				const viewH = viewport.clientHeight
+				const imgW = img.naturalWidth * scale
+				const imgH = img.naturalHeight * scale
+
+				if (imgW > viewW) {
+					const limit = (imgW - viewW) / 2
+					posX = Math.max(-limit, Math.min(limit, posX))
+				} else posX = 0
+				if (imgH > viewH) {
+					const limit = (imgH - viewH) / 2
+					posY = Math.max(-limit, Math.min(limit, posY))
+				} else posY = 0
+
+				updateTransform()
+			}
+			viewport.ontouchend = () => isDragging = false
+
+			viewport.onwheel = (e) => {
+				e.preventDefault()
+				const delta = e.deltaY > 0 ? 0.9 : 1.1
+				scale *= delta
+				scale = Math.min(Math.max(0.5, scale), 4)
+
+				const viewW = viewport.clientWidth
+				const viewH = viewport.clientHeight
+				const imgW = img.naturalWidth * scale
+				const imgH = img.naturalHeight * scale
+				if (imgW > viewW) {
+					const limit = (imgW - viewW) / 2
+					posX = Math.max(-limit, Math.min(limit, posX))
+				} else posX = 0
+				if (imgH > viewH) {
+					const limit = (imgH - viewH) / 2
+					posY = Math.max(-limit, Math.min(limit, posY))
+				} else posY = 0
+
+				updateTransform()
+			}
+
+			let initialDist = 0
+			viewport.ontouchmove = (e) => {
+				if (e.touches.length === 2) {
+					const dist = Math.hypot(
+						e.touches[0].clientX - e.touches[1].clientX,
+						e.touches[0].clientY - e.touches[1].clientY,
+					)
+					if (initialDist > 0) {
+						const delta = dist / initialDist
+						scale *= delta
+						scale = Math.min(Math.max(0.5, scale), 4)
+
+						const viewW = viewport.clientWidth
+						const viewH = viewport.clientHeight
+						const imgW = img.naturalWidth * scale
+						const imgH = img.naturalHeight * scale
+						if (imgW > viewW) {
+							const limit = (imgW - viewW) / 2
+							posX = Math.max(-limit, Math.min(limit, posX))
+						} else posX = 0
+						if (imgH > viewH) {
+							const limit = (imgH - viewH) / 2
+							posY = Math.max(-limit, Math.min(limit, posY))
+						} else posY = 0
+
+						updateTransform()
+					}
+					initialDist = dist
+				} else if (isDragging) {
+					posX = e.touches[0].clientX - startX
+					posY = e.touches[0].clientY - startY
+
+					const viewW = viewport.clientWidth
+					const viewH = viewport.clientHeight
+					const imgW = img.naturalWidth * scale
+					const imgH = img.naturalHeight * scale
+					if (imgW > viewW) {
+						const limit = (imgW - viewW) / 2
+						posX = Math.max(-limit, Math.min(limit, posX))
+					} else posX = 0
+					if (imgH > viewH) {
+						const limit = (imgH - viewH) / 2
+						posY = Math.max(-limit, Math.min(limit, posY))
+					} else posY = 0
+
+					updateTransform()
+				}
+			}
+			viewport.ontouchend = () => {
+				isDragging = false
+				initialDist = 0
+			}
+		}
+
+		function init() {
+			const stationSelect = document.getElementById('station-select')
+			const directionToggle = document.getElementById('direction-toggle')
+			const directionLabel = document.getElementById('direction-label')
+			const stations = stationsData.root.stations.station
+
+			stations.forEach((st) => {
+				const opt = document.createElement('option')
+				opt.value = st.abbr
+				opt.textContent = st.name
+				stationSelect.appendChild(opt)
+			})
+
+			stationSelect.onchange = () => {
+				cancelGeolocation()
+				const selected = stations.find((s) => s.abbr === stationSelect.value)
+				if (selected) {
+					localStorage.setItem('lastStation', selected.abbr)
+					fetchAndRenderDepartures(selected)
+				}
+			}
+
+			directionToggle.onchange = () => {
+				cancelGeolocation()
+				directionLabel.textContent = directionToggle.checked
+					? 'Northbound'
+					: 'Southbound'
+				const selected = stations.find((s) => s.abbr === stationSelect.value)
+				if (selected) fetchAndRenderDepartures(selected)
+			}
+
+			document.getElementById('btn-location').onclick = handleGeolocation
+
+			const savedStationAbbr = localStorage.getItem('lastStation')
+			if (savedStationAbbr) {
+				const savedStation = stations.find((s) => s.abbr === savedStationAbbr)
+				if (savedStation) {
+					stationSelect.value = savedStation.abbr
+					fetchAndRenderDepartures(savedStation)
+				}
+			} else {
+				const defaultStation = stations.find((s) => s.abbr === 'SFIA')
+				if (defaultStation) {
+					stationSelect.value = defaultStation.abbr
+					fetchAndRenderDepartures(defaultStation)
+				}
+			}
+
+			initMap()
+		}
+
+		window.onload = init
+		</script>
+	</body>
+</html>
